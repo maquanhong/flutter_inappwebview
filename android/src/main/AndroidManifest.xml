@@ -6,7 +6,7 @@
         <activity android:theme="@style/ThemeTransparent" android:name="com.pichillilorenzo.flutter_inappwebview.ChromeCustomTabs.ChromeCustomTabsActivity" android:configChanges="orientation|screenSize"></activity>
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="com.ruiwen.firecontrol.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
 

@@ -594,7 +594,7 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
 
     Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-      imageUri = FileProvider.getUriForFile(Shared.activity, BuildConfig.APPLICATION_ID + ".fileprovider", photo);
+      imageUri = FileProvider.getUriForFile(Shared.activity, "com.ruiwen.firecontrol.fileprovider", photo);
       captureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
     captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
