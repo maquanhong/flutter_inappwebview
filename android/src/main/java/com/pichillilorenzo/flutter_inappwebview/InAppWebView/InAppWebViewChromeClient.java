@@ -10,7 +10,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Message;
+import android.os.Parcelable;
+import android.provider.MediaStore;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.webkit.ConsoleMessage;
@@ -27,7 +31,9 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.FileProvider;
 
+import com.pichillilorenzo.flutter_inappwebview.BuildConfig;
 import com.pichillilorenzo.flutter_inappwebview.FlutterWebView;
 import com.pichillilorenzo.flutter_inappwebview.InAppBrowserActivity;
 import com.pichillilorenzo.flutter_inappwebview.InAppWebViewFlutterPlugin;
@@ -35,10 +41,13 @@ import com.pichillilorenzo.flutter_inappwebview.R;
 import com.pichillilorenzo.flutter_inappwebview.Shared;
 import com.pichillilorenzo.flutter_inappwebview.Util;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import io.flutter.plugin.common.MethodChannel;
@@ -541,49 +550,77 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
   public void openFileChooser(ValueCallback<Uri> uploadMsg) {
 
     mUploadMessage = uploadMsg;
-    Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-    i.addCategory(Intent.CATEGORY_OPENABLE);
-    i.setType("image/*");
-    Shared.activity.startActivityForResult(Intent.createChooser(i, "File Chooser"), FILECHOOSER_RESULTCODE);
+//    Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+//    i.addCategory(Intent.CATEGORY_OPENABLE);
+//    i.setType("image/*");
+//    Shared.activity.startActivityForResult(Intent.createChooser(i, "File Chooser"), FILECHOOSER_RESULTCODE);
+    takePhoto();
 
   }
 
   // For Android 3.0+
   public void openFileChooser(ValueCallback uploadMsg, String acceptType) {
     mUploadMessage = uploadMsg;
-    Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-    i.addCategory(Intent.CATEGORY_OPENABLE);
-    i.setType("*/*");
-    Shared.activity.startActivityForResult(
-            Intent.createChooser(i, "File Browser"),
-            FILECHOOSER_RESULTCODE);
+//    Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+//    i.addCategory(Intent.CATEGORY_OPENABLE);
+//    i.setType("*/*");
+//    Shared.activity.startActivityForResult(
+//            Intent.createChooser(i, "File Browser"),
+//            FILECHOOSER_RESULTCODE);
+    takePhoto();
   }
 
   //For Android 4.1
   public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
     mUploadMessage = uploadMsg;
-    Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-    i.addCategory(Intent.CATEGORY_OPENABLE);
-    i.setType("image/*");
-    Shared.activity.startActivityForResult(Intent.createChooser(i, "File Chooser"), FILECHOOSER_RESULTCODE);
+//    Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+//    i.addCategory(Intent.CATEGORY_OPENABLE);
+//    i.setType("image/*");
+//    Shared.activity.startActivityForResult(Intent.createChooser(i, "File Chooser"), FILECHOOSER_RESULTCODE);
+    takePhoto();
 
+  }
+
+  Uri imageUri;
+  int REQUEST_CODE = 1001;
+
+  private void takePhoto() {
+    // 指定拍照存储位置的方式调起相机
+    String filePath = Environment.getExternalStorageDirectory() + File.separator
+            + Environment.DIRECTORY_PICTURES + File.separator;
+    String fileName = "IMG_" + DateFormat.format("yyyyMMdd_hhmmss", Calendar.getInstance(Locale.CHINA)) + ".jpg";
+    File photo = new File(filePath + fileName);
+    imageUri = Uri.fromFile(new File(filePath + fileName));
+
+    Intent captureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      imageUri = FileProvider.getUriForFile(Shared.activity, BuildConfig.APPLICATION_ID + ".fileprovider", photo);
+      captureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    }
+    captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+    Intent Photo = new Intent(Intent.ACTION_PICK,
+            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+    Intent chooserIntent = Intent.createChooser(Photo, "Image Chooser");
+    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Parcelable[]{captureIntent});
+    Shared.activity.startActivityForResult(chooserIntent, REQUEST_CODE);
   }
 
   //For Android 5.0+
   public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
     InAppWebViewFlutterPlugin.uploadMessageArray = filePathCallback;
     try {
-      Intent contentSelectionIntent = new Intent(Intent.ACTION_GET_CONTENT);
-      contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
-      contentSelectionIntent.setType("*/*");
-      Intent[] intentArray;
-      intentArray = new Intent[0];
-
-      Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
-      chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
-      chooserIntent.putExtra(Intent.EXTRA_TITLE, "Image Chooser");
-      chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
-      Shared.activity.startActivityForResult(chooserIntent, FILECHOOSER_RESULTCODE);
+//      Intent contentSelectionIntent = new Intent(Intent.ACTION_GET_CONTENT);
+//      contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE);
+//      contentSelectionIntent.setType("*/*");
+//      Intent[] intentArray;
+//      intentArray = new Intent[0];
+//
+//      Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
+//      chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent);
+//      chooserIntent.putExtra(Intent.EXTRA_TITLE, "Image Chooser");
+//      chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray);
+//      Shared.activity.startActivityForResult(chooserIntent, FILECHOOSER_RESULTCODE);
+      takePhoto();
     } catch (ActivityNotFoundException e) {
       e.printStackTrace();
       return false;
