@@ -29,6 +29,7 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
@@ -68,6 +69,9 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
   private WebChromeClient.CustomViewCallback mCustomViewCallback;
   private int mOriginalOrientation;
   private int mOriginalSystemUiVisibility;
+
+  android.webkit.ValueCallback<Uri> mUploadCallbackBelow;
+  ValueCallback<Uri[]> mUploadCallbackAboveL;
 
   public InAppWebViewChromeClient(Object obj) {
     if (obj instanceof InAppBrowserActivity)
@@ -634,7 +638,84 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
     if (requestCode == FILECHOOSER_RESULTCODE && (resultCode == RESULT_OK || resultCode == RESULT_CANCELED)) {
       InAppWebViewFlutterPlugin.uploadMessageArray.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
     }
+
+    if (requestCode == REQUEST_CODE) {
+      // 经过上边(1)、(2)两个赋值操作，此处即可根据其值是否为空来决定采用哪种处理方法
+      if (mUploadCallbackBelow != null) {
+        chooseBelow(resultCode, data);
+      } else if (mUploadCallbackAboveL != null) {
+        chooseAbove(resultCode, data);
+      }
+    }
     return true;
+  }
+
+  private void chooseBelow(int resultCode, Intent data) {
+    Log.e("WangJ", "返回调用方法--chooseBelow");
+
+    if (RESULT_OK == resultCode) {
+      updatePhotos();
+
+      if (data != null) {
+        // 这里是针对文件路径处理
+        Uri uri = data.getData();
+        if (uri != null) {
+          Log.e("WangJ", "系统返回URI：" + uri.toString());
+          mUploadCallbackBelow.onReceiveValue(uri);
+        } else {
+          mUploadCallbackBelow.onReceiveValue(null);
+        }
+      } else {
+        // 以指定图像存储路径的方式调起相机，成功后返回data为空
+        Log.e("WangJ", "自定义结果：" + imageUri.toString());
+        mUploadCallbackBelow.onReceiveValue(imageUri);
+      }
+    } else {
+      mUploadCallbackBelow.onReceiveValue(null);
+    }
+    mUploadCallbackBelow = null;
+  }
+
+  /**
+   * Android API >= 21(Android 5.0) 版本的回调处理
+   *
+   * @param resultCode 选取文件或拍照的返回码
+   * @param data       选取文件或拍照的返回结果
+   */
+  private void chooseAbove(int resultCode, Intent data) {
+    Log.e("WangJ", "返回调用方法--chooseAbove");
+
+    if (RESULT_OK == resultCode) {
+      updatePhotos();
+
+      if (data != null) {
+        // 这里是针对从文件中选图片的处理
+        Uri[] results;
+        Uri uriData = data.getData();
+        if (uriData != null) {
+          results = new Uri[]{uriData};
+          for (Uri uri : results) {
+            Log.e("WangJ", "系统返回URI：" + uri.toString());
+          }
+          mUploadCallbackAboveL.onReceiveValue(results);
+        } else {
+          mUploadCallbackAboveL.onReceiveValue(null);
+        }
+      } else {
+        Log.e("WangJ", "自定义结果：" + imageUri.toString());
+        mUploadCallbackAboveL.onReceiveValue(new Uri[]{imageUri});
+      }
+    } else {
+      mUploadCallbackAboveL.onReceiveValue(null);
+    }
+    mUploadCallbackAboveL = null;
+  }
+
+  private void updatePhotos() {
+    // 该广播即使多发（即选取照片成功时也发送）也没有关系，只是唤醒系统刷新媒体文件
+    Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+    intent.setData(imageUri);
+    Shared.activity.sendBroadcast(intent);
   }
 
   @Override
