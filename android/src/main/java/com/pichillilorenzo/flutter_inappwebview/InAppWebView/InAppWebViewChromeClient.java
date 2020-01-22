@@ -606,7 +606,7 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
             android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
     Intent chooserIntent = Intent.createChooser(Photo, "Image Chooser");
     chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Parcelable[]{captureIntent});
-    Shared.activity.startActivityForResult(chooserIntent, REQUEST_CODE);
+    Shared.activity.startActivityForResult(chooserIntent, FILECHOOSER_RESULTCODE);
   }
 
   //For Android 5.0+
