@@ -627,7 +627,7 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
       takePhoto();
     } catch (ActivityNotFoundException e) {
       e.printStackTrace();
-      return true;
+      return false;
     }
     return true;
   }
@@ -635,11 +635,14 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   @Override
   public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (requestCode == FILECHOOSER_RESULTCODE && (resultCode == RESULT_OK || resultCode == RESULT_CANCELED)) {
+    if (requestCode == FILECHOOSER_RESULTCODE && (resultCode == RESULT_OK || resultCode == RESULT_CANCELED) && (data != null)) {
       InAppWebViewFlutterPlugin.uploadMessageArray.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
     }
+    if (data == null) {
+      InAppWebViewFlutterPlugin.uploadMessageArray.onReceiveValue(new Uri[]{imageUri});
+    }
 
-    if (requestCode == FILECHOOSER_RESULTCODE) {
+    if (requestCode == REQUEST_CODE) {
       // 经过上边(1)、(2)两个赋值操作，此处即可根据其值是否为空来决定采用哪种处理方法
       if (mUploadCallbackBelow != null) {
         chooseBelow(resultCode, data);
