@@ -627,7 +627,7 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
       takePhoto();
     } catch (ActivityNotFoundException e) {
       e.printStackTrace();
-      return false;
+      return true;
     }
     return true;
   }
@@ -639,7 +639,7 @@ public class InAppWebViewChromeClient extends WebChromeClient implements PluginR
       InAppWebViewFlutterPlugin.uploadMessageArray.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
     }
 
-    if (requestCode == REQUEST_CODE) {
+    if (requestCode == FILECHOOSER_RESULTCODE) {
       // 经过上边(1)、(2)两个赋值操作，此处即可根据其值是否为空来决定采用哪种处理方法
       if (mUploadCallbackBelow != null) {
         chooseBelow(resultCode, data);
